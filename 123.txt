@@ -1,0 +1,80 @@
+=================================
+
+function check_for_bad_pods() {
+    #adding script that looks for pods in 0/1 status for more than 20mins or an hour and deletes pod.
+    local BAD_PODS=$(kubectl --context ${EKS_CLUSTER_NAME} get pods | grep "0/1" | egrep -i "Running|Terminating" | awk '{print $1}')
+    if [ -z "$BAD_PODS" ]; then
+        echo "All Pods running normally"
+    else
+        for pod in $BAD_PODS
+        do
+            duration=$(kubectl --context ${EKS_CLUSTER_NAME} get pod  "$pod" | grep "0/1" | awk -F' ' '{print $5}')
+            if [ $(echo "$duration" | grep "s") ]; then
+                    continue
+            elif [ $(echo "$duration" | egrep "h|d") ]; then
+                echo "Pod: ${pod} not running since more than an hour. Deleting it."
+                kubectl --context ${EKS_CLUSTER_NAME} delete pod "$pod"
+            elif [ $(echo "$duration" | awk -F'm' {'print $1'}) -gt 20 ]; then
+                echo "Pod: ${pod} not running since more than 2 minutes. Deleting it."
+                kubectl --context ${EKS_CLUSTER_NAME} delete pod "$pod"
+            fi
+        done
+    fi
+}
+
+==================================================
+
+Step-1
+kubectl get pods | grep Evicted | awk '{print $1}' | xargs kubectl delete pod
+
+function check_for_bad_pods() {
+    #adding script that looks for pods in 0/1 status for more than 20mins or an hour and deletes pod.
+    local BAD_PODS=$(kubectl --context ${EKS_CLUSTER_NAME} get pods | grep "0/1" | egrep -i "Running|Terminating" | awk '{print $1}')
+    if [ -z "$BAD_PODS" ]; then
+        echo "All Pods running normally"
+    else
+        for pod in $BAD_PODS
+        do
+            duration=$(kubectl --context ${EKS_CLUSTER_NAME} get pod  "$pod" | grep "0/1" | awk -F' ' '{print $5}')
+            if [ $(echo "$duration" | grep "s") ]; then
+                    continue
+            elif [ $(echo "$duration" | egrep "h|d") ]; then
+                echo "Pod: ${pod} not running since more than an hour. Deleting it."
+                kubectl --context ${EKS_CLUSTER_NAME} delete pod "$pod"
+            elif [ kubectl get pods | grep Evicted | awk '{print $1}' | xargs kubectl delete pod ]; then
+                echo "Pod: ${pod} not running since more than 2 minutes. Deleting it."
+                kubectl --context ${EKS_CLUSTER_NAME} delete pod "$pod"
+            fi
+        done
+    fi
+}
+===============================================
+Step-2
+function check_for_bad_pods() {
+    #adding script that looks for pods in 0/1 status for more than 20mins or an hour and deletes pod.
+    local BAD_PODS=$(kubectl --context ${EKS_CLUSTER_NAME} get pods | grep "0/1" | egrep -i "Running|Terminating" | awk '{print $1}')
+    if [ -z "$BAD_PODS" ]; then
+        echo "All Pods running normally"
+    else
+        for pod in $BAD_PODS
+        do
+            duration=$(kubectl --context ${EKS_CLUSTER_NAME} get pod  "$pod" | grep "0/1" | awk -F' ' '{print $5}')
+            if [ $(echo "$duration" | grep "s") ]; then
+                    continue
+kubectl get pods -n default | grep Evicted | awk '{print $2 " --namespace=" $1}' | xargs -I '{}' bash -c 'kubectl delete pods {}'
+            elif [ $(echo "$duration" | egrep "h|d") ]; then
+                echo "Pod: ${pod} not running since more than an hour. Deleting it."
+                kubectl --context ${EKS_CLUSTER_NAME} delete pod "$pod"
+kubectl --namespace=production get pods -a | grep Evicted | awk '{print $1}' | xargs kubectl --namespace=production delete pod -o name
+            elif [ $(echo "$duration" | awk -F'm' {'print $1'}) -gt 20 ]; then
+                echo "Pod: ${pod} not running since more than 2 minutes. Deleting it."
+                kubectl --context ${EKS_CLUSTER_NAME} delete pod "$pod"
+            fi
+        done
+    fi
+}
+==========================================================================
+
+
+
+
